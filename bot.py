@@ -382,16 +382,19 @@ async def handle_ping(request):
     return web.Response(text="OK")
 
 async def main():
-    init_db()
-    
-    # Запускаем фоновый веб-сервер для прохождения проверки порта на Render
-    app = web.Application()
-    app.router.add_get("/", handle_ping)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    port = int(os.environ.get("PORT", 8080))
-    site = web.TCPSite(runner, "0.0.0.0", port)
-    await site.start()
+        init_db()
+        
+        # Запускаем фоновый веб-сервер для прохождения проверки порта на Render
+        app = web.Application()
+        app.router.add_get("/", handle_ping)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        
+        port = int(os.environ.get("PORT", 10000))
+        print(f"Starting web server on port {port}...")  # Отладка в логах
+        
+        site = web.TCPSite(runner, "0.0.0.0", port)
+        await site.start()
 
-    # Запуск Telegram-бота
-    await dp.start_polling(bot)
+        # Запуск Telegram-бота
+        await dp.start_polling(bot)
