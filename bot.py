@@ -1,3 +1,5 @@
+import os
+from aiohttp import web
 import asyncio
 import sqlite3
 import time
@@ -376,9 +378,20 @@ async def handle_plain_text(message: types.Message):
     await handle_anon_sending(message, sender_id)
 
 
+async def handle_ping(request):
+    return web.Response(text="OK")
+
 async def main():
     init_db()
-    await dp.start_polling(bot)
+    
+    # Запускаем фоновый веб-сервер для прохождения проверки порта на Render
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
 
-if __name__ == "__main__":
-    asyncio.run(main())
+    # Запуск Telegram-бота
+    await dp.start_polling(bot)
